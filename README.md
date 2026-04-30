@@ -265,7 +265,7 @@ http://localhost:2501
 
 ---
 
-## 🛠️ Usage
+## 🛠️ Device Database Scan
 
 ### Update Network Device Database
 
@@ -275,7 +275,10 @@ Run on SOC Raspberry Pi:
 ./scan_devices.sh
 ```
 ---
+## Adding a new robot to dashboard
+https://drive.google.com/uc?export=view&id=1bhJrQ437ZlaQD5Q3LnMZZCmpbGt31fNM
 
+---
 ## 🧠 Summary
 
 This SOC system provides:
