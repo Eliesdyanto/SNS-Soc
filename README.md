@@ -279,7 +279,7 @@ Run on SOC Raspberry Pi:
 ## Adding a new robot to dashboard
 Example: Creating a dashboard for robot, "Clyde" and adding it to main dashboard
 
-https://drive.google.com/uc?export=view&id=1bhJrQ437ZlaQD5Q3LnMZZCmpbGt31fNM
+https://drive.google.com/file/d/1bhJrQ437ZlaQD5Q3LnMZZCmpbGt31fNM/view?usp=sharing
 
 ---
 ## 🧠 Summary
