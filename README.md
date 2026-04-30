@@ -42,6 +42,87 @@ The network setup is centered around a router (192.168.0.1/24) that connects mul
 
 ---
 
+## 📂 File Placement (Ubuntu)
+
+### 🔧 Logstash Configuration Files
+Place all Logstash config files in:
+
+/etc/logstash/conf.d/
+
+Files:
+- 00-inputs.conf
+- 09-metricbeat.conf
+- 10-packetbeat.conf
+- 11-heartbeat.conf
+- 12-iperf.conf
+- 20-ros.conf
+- 21-suricata.conf
+- 30-kismet.conf
+- 32-arp.conf
+
+Copy with:
+sudo cp "Logstash Conf Files"/*.conf /etc/logstash/conf.d/
+
+Restart Logstash after changes:
+sudo systemctl restart logstash
+
+---
+
+### ⚙️ SOC YML Configuration Files
+These are service configs for the ELK stack:
+
+- kibana.yml → /etc/kibana/kibana.yml
+- logstash.yml → /etc/logstash/logstash.yml
+- elasticsearch.yml → /etc/elasticsearch/elasticsearch.yml
+
+Example copy:
+sudo cp "Soc YML Files"/kibana.yml.txt /etc/kibana/kibana.yml
+sudo cp "Soc YML Files"/logstash.yml /etc/logstash/logstash.yml
+sudo cp "Soc YML Files"/elasticsearch.yml.txt /etc/elasticsearch/elasticsearch.yml
+
+---
+
+### 🤖 Robot YMLs
+Located in:
+Robot YMLs/
+
+These configs are meant to run on the robots themselves, not the SOC machine.  
+They are included here as backup/reference copies only.
+
+---
+
+### 📊 Kibana Vega Diagrams
+Located in:
+Kibana Vega Diagrams/
+
+These files are reference/backup Vega visualizations and:
+- Do not need to be placed anywhere on the system
+- Can be copied into Kibana manually when creating visualizations
+
+---
+
+### 🧰 Scripts
+
+- scan_devices.sh  
+  - Can be placed anywhere
+
+Example:
+chmod +x scan_devices.sh
+./scan_devices.sh
+
+---
+
+## 📝 Notes
+- .txt extensions on some YAML files are intentional (for storage/transfer). Remove .txt when placing them in system directories.
+- Always restart services after updating configs:
+
+sudo systemctl restart elasticsearch
+sudo systemctl restart logstash
+sudo systemctl restart kibana
+
+
+---
+
 ## 📊 Main Dashboard
 
 ![Main Dashboard](https://github.com/user-attachments/assets/e7bbcfa0-ac3b-4914-a9e9-5e94a11f876a)
