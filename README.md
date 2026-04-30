@@ -17,6 +17,7 @@ A centralized monitoring and security analysis system for a robotic network, pow
 - [MITM Detection](#-mitm-detection)
 - [Kibana Tools](#-kibana-tools)
 - [Usage](#-usage)
+- [Adding New Robot](#-Adding-a-new-robot-to-dashboard)
 
 ---
 
