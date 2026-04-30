@@ -274,10 +274,9 @@ Run on SOC Raspberry Pi:
 ```
 ./scan_devices.sh
 ```
-
+---
 Example:
 https://drive.google.com/file/d/1bhJrQ437ZlaQD5Q3LnMZZCmpbGt31fNM/view?usp=drive_link
-
 ---
 
 ## 🧠 Summary
