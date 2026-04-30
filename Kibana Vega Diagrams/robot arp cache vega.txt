@@ -1,0 +1,228 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "padding": 10,
+
+  "signals": [
+    { "name": "targetRobotIp", "value": "192.168.0.139" },
+    { "name": "maxDataAgeMs", "value": 300000 },
+    {
+      "name": "hasFreshArpData",
+      "update": "length(data('arp_vs_golden')) > 0"
+    }
+  ],
+
+  "data": [
+    {
+      "name": "golden_docs",
+      "url": {
+        "index": "network-devices",
+        "body": {
+          "size": 10000,
+          "fields": ["ip", "mac"],
+          "_source": false
+        }
+      },
+      "format": { "property": "hits.hits" },
+      "transform": [
+        {
+          "type": "formula",
+          "as": "golden_ip",
+          "expr": "datum.fields && datum.fields.ip ? datum.fields.ip[0] : null"
+        },
+        {
+          "type": "formula",
+          "as": "golden_mac",
+          "expr": "datum.fields && datum.fields.mac ? lower(datum.fields.mac[0]) : null"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.golden_ip != null && datum.golden_ip !== '' && datum.golden_mac != null && datum.golden_mac !== ''"
+        }
+      ]
+    },
+
+    {
+      "name": "arp_docs",
+      "url": {
+        "index": "arp-cache-*",
+        "body": {
+          "size": 10000,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "bool": {
+                    "should": [
+                      { "term": { "host.ip.keyword": "192.168.0.139" } },
+                      { "term": { "host.ip": "192.168.0.139" } },
+                      { "match": { "host.ip": "192.168.0.139" } }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                }
+              ]
+            }
+          },
+          "fields": ["ip", "mac", "host.ip", "@timestamp"],
+          "_source": false,
+          "sort": [
+            { "@timestamp": { "order": "desc" } }
+          ]
+        }
+      },
+      "format": { "property": "hits.hits" },
+      "transform": [
+        {
+          "type": "formula",
+          "as": "reported_ip",
+          "expr": "datum.fields && datum.fields.ip ? datum.fields.ip[0] : null"
+        },
+        {
+          "type": "formula",
+          "as": "reported_mac",
+          "expr": "datum.fields && datum.fields.mac ? lower(datum.fields.mac[0]) : null"
+        },
+        {
+          "type": "formula",
+          "as": "reported_ts",
+          "expr": "datum.fields && datum.fields['@timestamp'] ? toDate(datum.fields['@timestamp'][0]) : null"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.reported_ip != null && datum.reported_ip !== '' && datum.reported_mac != null && datum.reported_mac !== '' && datum.reported_ts != null"
+        }
+      ]
+    },
+
+    {
+      "name": "latest_snapshot",
+      "source": "arp_docs",
+      "transform": [
+        {
+          "type": "aggregate",
+          "ops": ["max"],
+          "fields": ["reported_ts"],
+          "as": ["latest_ts"]
+        }
+      ]
+    },
+
+    {
+      "name": "arp_current_cache",
+      "source": "arp_docs",
+      "transform": [
+        {
+          "type": "formula",
+          "as": "latest_ts",
+          "expr": "length(data('latest_snapshot')) ? data('latest_snapshot')[0].latest_ts : null"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.latest_ts != null && datum.reported_ts != null && toNumber(datum.reported_ts) === toNumber(datum.latest_ts)"
+        },
+        {
+          "type": "filter",
+          "expr": "(now() - toNumber(datum.reported_ts)) <= maxDataAgeMs"
+        }
+      ]
+    },
+
+    {
+      "name": "arp_vs_golden",
+      "source": "arp_current_cache",
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "golden_docs",
+          "key": "golden_ip",
+          "fields": ["reported_ip"],
+          "values": ["golden_mac"],
+          "as": ["golden_mac"]
+        },
+        {
+          "type": "formula",
+          "as": "status",
+          "expr": "datum.golden_mac == null || datum.golden_mac === '' ? 'NOT IN DATABASE' : (datum.reported_mac === datum.golden_mac ? 'MATCH' : 'MISMATCH')"
+        },
+        {
+          "type": "formula",
+          "as": "rowText",
+          "expr": "datum.reported_ip + ' assigned to ' + datum.reported_mac + ' | Intended MAC: ' + (datum.golden_mac == null || datum.golden_mac === '' ? 'missing' : datum.golden_mac) + ' - ' + datum.status"
+        },
+        {
+          "type": "window",
+          "sort": {
+            "field": ["reported_ip"],
+            "order": ["ascending"]
+          },
+          "ops": ["row_number"],
+          "as": ["rownum"]
+        }
+      ]
+    }
+  ],
+
+  "marks": [
+    {
+      "type": "rect",
+      "encode": {
+        "update": {
+          "x": { "value": 0 },
+          "y": { "value": 0 },
+          "x2": { "signal": "width" },
+          "y2": { "signal": "height" },
+          "fill": { "signal": "hasFreshArpData ? '#1f1f1f' : '#5a5a5a'" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "x": { "signal": "width / 2" },
+          "y": { "value": 28 },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 24 },
+          "fontWeight": { "value": "bold" },
+          "fill": { "signal": "hasFreshArpData ? 'white' : '#d3d3d3'" },
+          "text": { "signal": "'CURRENT ARP CACHE FOR INKY - ' + targetRobotIp" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "arp_vs_golden" },
+      "encode": {
+        "update": {
+          "x": { "signal": "width / 2" },
+          "y": { "signal": "60 + (datum.rownum - 1) * 24" },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 16 },
+          "fill": {
+            "signal": "datum.status === 'MATCH' ? '#7CFC00' : (datum.status === 'MISMATCH' ? '#FF6B6B' : '#FFD166')"
+          },
+          "text": { "field": "rowText" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "update": {
+          "x": { "signal": "width / 2" },
+          "y": { "signal": "height / 2" },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 28 },
+          "fontWeight": { "value": "bold" },
+          "fill": { "value": "#e0e0e0" },
+          "opacity": { "signal": "hasFreshArpData ? 0 : 1" },
+          "text": { "value": "NO DATA" }
+        }
+      }
+    }
+  ]
+}

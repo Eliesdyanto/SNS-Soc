@@ -1,0 +1,59 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "url": {
+      "%context%": true,
+      "%timefield%": "@timestamp",
+      "index": "ros2-inky-odom-*",
+      "body": {
+        "size": 10000,
+        "sort": [
+          { "@timestamp": "asc" }
+        ],
+        "_source": ["@timestamp", "data.pos"]
+      }
+    },
+    "format": { "property": "hits.hits" }
+  },
+  "transform": [
+    { "calculate": "datum._source.data.pos[0]", "as": "x" },
+    { "calculate": "datum._source.data.pos[1]", "as": "y" },
+    { "calculate": "toDate(datum._source['@timestamp'])", "as": "time" }
+  ],
+  "mark": {
+    "type": "line",
+    "point": true
+  },
+  "encoding": {
+    "x": {
+      "field": "x",
+      "type": "quantitative",
+      "title": "X Position",
+      "scale": {
+        "zero": false
+      }
+    },
+    "y": {
+      "field": "y",
+      "type": "quantitative",
+      "title": "Y Position",
+      "scale": {
+        "zero": false
+      }
+    },
+    "color": {
+      "field": "time",
+      "type": "temporal",
+      "title": "Timestamp",
+      "scale": { "scheme": "viridis" },
+      "legend": {
+        "format": "%Y-%m-%d %H:%M:%S"
+      }
+    },
+    "tooltip": [
+      { "field": "time", "type": "temporal", "title": "Time", "format": "%Y-%m-%d %H:%M:%S" },
+      { "field": "x", "type": "quantitative", "title": "X" },
+      { "field": "y", "type": "quantitative", "title": "Y" }
+    ]
+  }
+}

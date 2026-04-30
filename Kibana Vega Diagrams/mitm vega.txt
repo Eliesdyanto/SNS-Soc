@@ -1,0 +1,311 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "autosize": { "type": "fit", "contains": "padding", "resize": true },
+  "padding": 0,
+
+  "signals": [
+    {
+      "name": "dashboardUrl",
+      "value": "http://192.168.0.76:5601/app/dashboards#/view/4f586799-7a21-4d93-bf96-2fb6e6274349?_g=(time:(from:now-15m,to:now))"
+    },
+    { "name": "currentWindowMs", "value": 300000 },
+    {
+      "name": "hover",
+      "value": false,
+      "on": [
+        { "events": "text:mouseover", "update": "true" },
+        { "events": "text:mouseout", "update": "false" }
+      ]
+    }
+  ],
+
+  "data": [
+    {
+      "name": "golden_docs",
+      "url": {
+        "index": "network-devices",
+        "body": {
+          "size": 10000,
+          "fields": ["ip", "mac"],
+          "_source": false
+        }
+      },
+      "format": { "property": "hits.hits" },
+      "transform": [
+        {
+          "type": "formula",
+          "as": "golden_ip",
+          "expr": "datum.fields && datum.fields.ip ? datum.fields.ip[0] : null"
+        },
+        {
+          "type": "formula",
+          "as": "golden_mac",
+          "expr": "datum.fields && datum.fields.mac ? lower(datum.fields.mac[0]) : null"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.golden_ip != null && datum.golden_ip !== '' && datum.golden_mac != null && datum.golden_mac !== ''"
+        }
+      ]
+    },
+
+    {
+      "name": "arp_docs",
+      "url": {
+        "index": "arp-cache-*",
+        "body": {
+          "size": 10000,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "bool": {
+                    "should": [
+                      { "term": { "host.ip.keyword": "192.168.0.139" } },
+                      { "term": { "host.ip": "192.168.0.139" } },
+                      { "match": { "host.ip": "192.168.0.139" } }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                }
+              ]
+            }
+          },
+          "fields": ["ip", "mac", "host.ip", "@timestamp"],
+          "_source": false,
+          "sort": [{ "@timestamp": { "order": "desc" } }]
+        }
+      },
+      "format": { "property": "hits.hits" },
+      "transform": [
+        {
+          "type": "formula",
+          "as": "reported_ip",
+          "expr": "datum.fields && datum.fields.ip ? datum.fields.ip[0] : null"
+        },
+        {
+          "type": "formula",
+          "as": "reported_mac",
+          "expr": "datum.fields && datum.fields.mac ? lower(datum.fields.mac[0]) : null"
+        },
+        {
+          "type": "formula",
+          "as": "reported_ts",
+          "expr": "datum.fields && datum.fields['@timestamp'] ? toDate(datum.fields['@timestamp'][0]) : null"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.reported_ip != null && datum.reported_ip !== '' && datum.reported_mac != null && datum.reported_mac !== '' && datum.reported_ts != null"
+        }
+      ]
+    },
+
+    {
+      "name": "arp_meta",
+      "source": "arp_docs",
+      "transform": [
+        {
+          "type": "aggregate",
+          "ops": ["count", "max"],
+          "fields": ["reported_ip", "reported_ts"],
+          "as": ["totalDocs", "latest_ts"]
+        },
+        {
+          "type": "formula",
+          "as": "k",
+          "expr": "1"
+        }
+      ]
+    },
+
+    {
+      "name": "arp_current_cache",
+      "source": "arp_docs",
+      "transform": [
+        {
+          "type": "joinaggregate",
+          "ops": ["max"],
+          "fields": ["reported_ts"],
+          "as": ["latest_ts"]
+        },
+        {
+          "type": "filter",
+          "expr": "datum.reported_ts != null && datum.latest_ts != null && toNumber(datum.reported_ts) === toNumber(datum.latest_ts)"
+        }
+      ]
+    },
+
+    {
+      "name": "arp_vs_golden",
+      "source": "arp_current_cache",
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "golden_docs",
+          "key": "golden_ip",
+          "fields": ["reported_ip"],
+          "values": ["golden_mac"],
+          "as": ["golden_mac"]
+        },
+        {
+          "type": "formula",
+          "as": "isUnknownIp",
+          "expr": "datum.golden_mac == null || datum.golden_mac === '' ? 1 : 0"
+        },
+        {
+          "type": "formula",
+          "as": "isMacMismatch",
+          "expr": "datum.golden_mac != null && datum.golden_mac !== '' && datum.reported_mac !== datum.golden_mac ? 1 : 0"
+        }
+      ]
+    },
+
+    {
+      "name": "mismatch_counts",
+      "source": "arp_vs_golden",
+      "transform": [
+        {
+          "type": "aggregate",
+          "ops": ["sum", "sum"],
+          "fields": ["isMacMismatch", "isUnknownIp"],
+          "as": ["macMismatchCount", "unknownIpCount"]
+        },
+        {
+          "type": "formula",
+          "as": "k",
+          "expr": "1"
+        }
+      ]
+    },
+
+    {
+      "name": "summary_seed",
+      "values": [{ "k": 1 }]
+    },
+
+    {
+      "name": "summary",
+      "source": "summary_seed",
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "arp_meta",
+          "key": "k",
+          "fields": ["k"],
+          "values": ["totalDocs", "latest_ts"],
+          "as": ["totalDocs", "latest_ts"]
+        },
+        {
+          "type": "lookup",
+          "from": "mismatch_counts",
+          "key": "k",
+          "fields": ["k"],
+          "values": ["macMismatchCount", "unknownIpCount"],
+          "as": ["macMismatchCount", "unknownIpCount"]
+        },
+        {
+          "type": "formula",
+          "as": "totalDocs",
+          "expr": "datum.totalDocs == null ? 0 : datum.totalDocs"
+        },
+        {
+          "type": "formula",
+          "as": "macMismatchCount",
+          "expr": "datum.macMismatchCount == null ? 0 : datum.macMismatchCount"
+        },
+        {
+          "type": "formula",
+          "as": "unknownIpCount",
+          "expr": "datum.unknownIpCount == null ? 0 : datum.unknownIpCount"
+        },
+        {
+          "type": "formula",
+          "as": "latestAgeMs",
+          "expr": "datum.latest_ts != null ? now() - toDate(datum.latest_ts) : null"
+        },
+        {
+          "type": "formula",
+          "as": "hasCurrentArpCache",
+          "expr": "datum.totalDocs > 0 && datum.latestAgeMs != null && datum.latestAgeMs <= currentWindowMs"
+        },
+        {
+          "type": "formula",
+          "as": "statusText",
+          "expr": "!datum.hasCurrentArpCache ? 'NO CURRENT ARP DATA' : (datum.macMismatchCount > 0 ? 'ALERT:\\nMISMATCH DETECTED' : (datum.unknownIpCount > 0 ? 'WARNING:\\nUNKNOWN IP DETECTED' : 'NO MISMATCH IN ARP CACHE'))"
+        },
+        {
+          "type": "formula",
+          "as": "statusFill",
+          "expr": "!datum.hasCurrentArpCache ? '#F5F5F5' : (datum.macMismatchCount > 0 ? '#FDECEC' : (datum.unknownIpCount > 0 ? '#FFF8E1' : '#EAF7EC'))"
+        },
+        {
+          "type": "formula",
+          "as": "statusStroke",
+          "expr": "!datum.hasCurrentArpCache ? '#9AA0A6' : (datum.macMismatchCount > 0 ? '#D93025' : (datum.unknownIpCount > 0 ? '#F9AB00' : '#1E8E3E'))"
+        },
+        {
+          "type": "formula",
+          "as": "statusTextColor",
+          "expr": "!datum.hasCurrentArpCache ? '#5F6368' : (datum.macMismatchCount > 0 ? '#D93025' : (datum.unknownIpCount > 0 ? '#B06000' : '#1E8E3E'))"
+        },
+        {
+          "type": "formula",
+          "as": "statusHref",
+          "expr": "datum.hasCurrentArpCache ? dashboardUrl : null"
+        },
+        {
+          "type": "formula",
+          "as": "statusCursor",
+          "expr": "datum.hasCurrentArpCache ? 'pointer' : 'default'"
+        }
+      ]
+    }
+  ],
+
+  "marks": [
+    {
+      "type": "rect",
+      "from": { "data": "summary" },
+      "encode": {
+        "update": {
+          "x": { "value": 0 },
+          "y": { "value": 0 },
+          "x2": { "signal": "width" },
+          "y2": { "signal": "height" },
+          "fill": { "field": "statusFill" },
+          "stroke": { "field": "statusStroke" },
+          "strokeWidth": { "value": 4 }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "summary" },
+      "encode": {
+        "update": {
+          "x": { "signal": "width / 2" },
+          "y": { "signal": "height / 2" },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "signal": "clamp(min(width / 8, height / 3), 18, 56)" },
+          "fontWeight": { "value": "bold" },
+          "fill": { "field": "statusTextColor" },
+          "text": { "field": "statusText" },
+          "href": { "field": "statusHref" },
+          "cursor": { "field": "statusCursor" },
+          "tooltip": {
+            "signal": "datum.statusHref ? 'Open dashboard' : datum.statusText"
+          },
+          "target": { "value": "_blank" },
+          "underline": {
+            "signal": "datum.statusHref ? (hover ? 2 : 1) : 0"
+          },
+          "opacity": {
+            "signal": "hover && datum.statusHref ? 0.8 : 1"
+          }
+        }
+      }
+    }
+  ]
+}

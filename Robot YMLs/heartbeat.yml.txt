@@ -1,0 +1,28 @@
+  GNU nano 6.2                                                                                                            /etc/heartbeat/heartbeat.yml
+heartbeat.monitors:
+  - type: icmp
+    id: robot-latency
+    name: Robot-Controller Latency Monitor
+    schedule: '@every 5s'
+    hosts: ["192.168.0.1"]   # ping ELK server
+
+  - type: icmp
+    id: self-check
+    name: Robot Self Ping
+    schedule: '@every 5s'
+    hosts: ["192.168.0.139"]
+
+processors:
+  - add_observer_metadata:
+      netinfo.enabled: true
+
+output.logstash:
+  hosts: ["192.168.0.76:5044"]
+
+
+
+
+
+
+
+

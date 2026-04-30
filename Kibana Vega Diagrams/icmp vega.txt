@@ -1,0 +1,106 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "padding": 0,
+
+  "signals": [
+    { "name": "alertThreshold", "value": 100 }
+  ],
+
+  "data": [
+    {
+      "name": "icmp_check",
+      "url": {
+        "index": "packetbeat-*",
+        "body": {
+          "size": 0,
+          "track_total_hits": true,
+          "query": {
+            "bool": {
+              "filter": [
+                {
+                  "range": {
+                    "@timestamp": {
+                      "gte": "now-15s",
+                      "lte": "now"
+                    }
+                  }
+                },
+                {
+                  "term": {
+                    "network.transport.keyword": "icmp"
+                  }
+                },
+                {
+                  "bool": {
+                    "should": [
+                      { "term": { "source.ip.keyword": "192.168.0.139" } },
+                      { "term": { "destination.ip.keyword": "192.168.0.139" } }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "format": { "property": "hits" },
+      "transform": [
+        {
+          "type": "formula",
+          "as": "docCount",
+          "expr": "datum.total && datum.total.value != null ? datum.total.value : datum.total"
+        },
+        {
+          "type": "formula",
+          "as": "isAlert",
+          "expr": "datum.docCount > alertThreshold"
+        },
+        {
+          "type": "formula",
+          "as": "bgColor",
+          "expr": "datum.docCount === 0 ? '#555555' : (datum.isAlert ? '#8B0000' : '#006400')"
+        }
+      ]
+    }
+  ],
+
+  "marks": [
+    {
+      "type": "rect",
+      "from": { "data": "icmp_check" },
+      "encode": {
+        "update": {
+          "x": { "value": 0 },
+          "y": { "value": 0 },
+          "x2": { "signal": "width" },
+          "y2": { "signal": "height" },
+          "fill": { "field": "bgColor" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "icmp_check" },
+      "encode": {
+        "update": {
+          "x": { "signal": "width / 2" },
+          "y": { "signal": "height / 2" },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+
+          "fontSize": {
+            "signal": "clamp(min(width, height) / 8, 18, 120)"
+          },
+
+          "fontWeight": { "value": "bold" },
+          "fill": { "value": "white" },
+
+          "text": {
+            "signal": "datum.docCount === 0 ? 'ROBOT OFFLINE' : (datum.isAlert ? 'ALERT: HIGH ICMP COUNT' : 'ICMP COUNT NORMAL')"
+          }
+        }
+      }
+    }
+  ]
+}
