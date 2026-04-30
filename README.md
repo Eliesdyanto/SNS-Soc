@@ -42,7 +42,8 @@ http://192.168.0.76:5601
 
 ## 📊 Main Dashboard
 
-![Main Dashboard](https://github.com/user-attachments/assets/1c5aa85d-9c43-44cc-96c5-a4c8744be425)
+![Main Dashboard](<img width="1911" height="878" alt="Screenshot 2026-04-27 101349" src="https://github.com/user-attachments/assets/e7bbcfa0-ac3b-4914-a9e9-5e94a11f876a" />
+)
 
 **Features:**
 - Real-time robot fleet monitoring  
