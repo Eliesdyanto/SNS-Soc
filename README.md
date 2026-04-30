@@ -16,8 +16,8 @@ A centralized monitoring and security analysis system for a robotic network, pow
 - [Robot Dashboards](#-robot-dashboards)
 - [MITM Detection](#-mitm-detection)
 - [Kibana Tools](#-kibana-tools)
-- [Usage](#-usage)
-- [Adding New Robot](#-adding-a-new-robot-to-dashboard)
+- [Usage](#usage)
+- [Adding New Robot](#adding-a-new-robot-to-dashboard)
 
 ---
 
@@ -277,6 +277,8 @@ Run on SOC Raspberry Pi:
 ```
 ---
 ## Adding a new robot to dashboard
+Example: Creating a dashboard for robot, "Clyde" and adding it to main dashboard
+
 https://drive.google.com/uc?export=view&id=1bhJrQ437ZlaQD5Q3LnMZZCmpbGt31fNM
 
 ---
