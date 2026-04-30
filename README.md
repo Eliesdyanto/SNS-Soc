@@ -38,6 +38,8 @@ http://192.168.0.76:5601
 
 ![Network Diagram](https://github.com/user-attachments/assets/820ef3d8-37da-4194-b490-13e154734a95)
 
+The network setup is centered around a router (192.168.0.1/24) that connects multiple devices on a local subnet (192.168.0.0/24). These include a controller laptop, several TurtleBot3 robots (Blinky, Inky, Pinky, and Clyde), an attack Raspberry Pi, and a Raspberry Pi 5 acting as a Security Operations Center. The SOC Pi is also connected via Ethernet to a separate subnet (10.0.0.0/24) with a monitoring Raspberry Pi. Dashed lines indicate Wi-Fi connections, while solid lines represent Ethernet connections.
+
 ---
 
 ## 📊 Main Dashboard
