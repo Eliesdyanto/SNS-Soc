@@ -108,11 +108,9 @@ http://localhost:2501
 
 ---
 
-### 📡 Dashboard under deauthentication attacks
+### 📡 Dashboards under deauthentication attacks
 
 ![Main Deauth](https://github.com/user-attachments/assets/ae74571b-5853-4996-9137-535f61d36883)
-
-![Kismet Dashboard](https://github.com/user-attachments/assets/ecec9f80-5922-4aea-a041-7b324f30aac4)
 
 ![Deauth Attack](https://github.com/user-attachments/assets/b4a9b24e-ff46-4109-bbb5-e1b831ee2ec3)
 
