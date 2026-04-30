@@ -75,11 +75,6 @@ These are service configs for the ELK stack:
 - logstash.yml → /etc/logstash/logstash.yml
 - elasticsearch.yml → /etc/elasticsearch/elasticsearch.yml
 
-Example copy:
-sudo cp "Soc YML Files"/kibana.yml.txt /etc/kibana/kibana.yml
-sudo cp "Soc YML Files"/logstash.yml /etc/logstash/logstash.yml
-sudo cp "Soc YML Files"/elasticsearch.yml.txt /etc/elasticsearch/elasticsearch.yml
-
 ---
 
 ### 🤖 Robot YMLs
