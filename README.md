@@ -1,3 +1,5 @@
+
+
 # 🛡️ Security Operations Center (SOC) Dashboard
 
 A centralized monitoring and security analysis system for a robotic network, powered by the **ELK Stack** and **Kismet**.
@@ -272,6 +274,9 @@ Run on SOC Raspberry Pi:
 ```
 ./scan_devices.sh
 ```
+
+Example:
+https://drive.google.com/file/d/1bhJrQ437ZlaQD5Q3LnMZZCmpbGt31fNM/view?usp=drive_link
 
 ---
 
