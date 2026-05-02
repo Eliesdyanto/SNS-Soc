@@ -15,29 +15,27 @@ Each data collection trial represents a **10-minute scenario** conducted on a de
 ## 2. Scenario Matrix
 The following table outlines the 10 scenarios tested. 
 
-| ID | Scenario | Attack Tool | Command / Intensity | Watermark |
+| ID | Scenario | Attack Tool | Command / Intensity |
 | :--- | :--- | :--- | :--- | :--- |
-| **01** | **Baseline** | N/A | No Attack Traffic | None |
-| **02** | **Deauth Flood** | `mdk4` | `sudo mdk4 wlan1 d -E [ssid]` | 10ms* |
-| **03** | **ICMP Flood (Fast)**| `hping3` | `sudo hping3 -1 --flood [IP]` | TBD |
-| **04** | **ICMP Flood (Slow)**| `hping3` | `sudo hping3 -1 --faster [IP]`| **10ms** |
-| **05** | **MITM** | `Ettercap` | ARP Poisoning | None |
+| **01** | **Baseline** | N/A | No Attack Traffic |
+| **02** | **Deauth Flood** | `mdk4` | `sudo mdk4 wlan1 d -E [ssid]` |
+| **03** | **ICMP Flood (Fast)**| `hping3` | `sudo hping3 -1 --flood [IP]` |
+| **04** | **ICMP Flood (Slow)**| `hping3` | `sudo hping3 -1 --faster [IP]`|
+| **05** | **MITM** | `iptables, sysctl, scapy` | ARP Poisoning | None |
 | **06** | **MITM + ICMP** | Mixed | Multi-vector Attack | TBD |
-| **07** | **TCP SYN (Fast)** | `hping3` | `sudo hping3 -S -p 22 --flood [IP]`| TBD |
-| **08** | **TCP SYN (Slow)** | `hping3` | `sudo hping3 -S -p 22 --faster [IP]`| **10ms** |
-| **09** | **Watermarked 10ms** | N/A | Baseline + Security Overhead | 10ms |
-| **10** | **Watermarked 20ms** | N/A | Baseline + Security Overhead | 20ms |
-
-*\*Note: While the 10ms watermark script was active during the Deauth attack, valid data packets are only present in logs prior to and after the disconnection event.*
+| **07** | **TCP SYN (Fast)** | `hping3` | `sudo hping3 -S -p 22 --flood [IP]`|
+| **08** | **TCP SYN (Slow)** | `hping3` | `sudo hping3 -S -p 22 --faster [IP]`|
+| **09** | **Watermarked 10ms** | N/A | Baseline + Security Overhead |
+| **10** | **Watermarked 20ms** | N/A | Baseline + Security Overhead |
 
 ## 3. Data Collection Methodology
 We employed a multi-layered logging strategy to capture the "ground truth" of the network state.
 
 ### Network Captures (.pcap)
 To ensure no data was missed due to local processing limits, captures were run simultaneously on three nodes:
-1. **Robot:** Captured via `tcpdump -i any -s 0 -w [filename].pcap`.
-2. **Controller:** Captured via `tshark -i any -w [filename].pcapng`.
-3. **SOC:** Captured via `tshark -i any -w [filename].pcapng`.
+1. **Robot:** Captured via `sudo timeout 600s tcpdump -i any -s 0 -w [scenario]_robot.pcap `.
+2. **Controller:** Captured via `sudo tshark -i any -a duration:600 -w - > "[scenario]_controller.pcap" `.
+3. **SOC:** Captured via `sudo tshark -i any -a duration:600 -w - > "[scenario]_soc.pcap" `.
 
 ### System & Security Logs (.csv)
 The following CSV files were collected for each scenario:
