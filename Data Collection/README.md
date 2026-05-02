@@ -2,6 +2,8 @@
 
 This directory serves as the primary repository for network and telemetry data collected during the evaluation of the **Secure Network System (SNS)**. The dataset characterizes the impact of various adversarial actions on a ROS 2-based TurtleBot3 platform.
 
+> **Note on Data Access:** Due to the large size of the raw PCAP files (500MB+), full datasets including all PCAPs and CSV logs are hosted on Google Drive. Click the folder links in the sections below to access the raw data.
+
 ## 1. Experimental Overview
 Each data collection trial represents a **10-minute scenario** conducted on a dedicated wireless network (SSID: `SNS`). 
 
@@ -13,8 +15,6 @@ Each data collection trial represents a **10-minute scenario** conducted on a de
     * **Offensive Pi:** Attacker node (executing `hping3` and `mdk4` payloads).
 
 ## 2. Scenario Matrix
-The following table outlines the 10 scenarios tested. 
-
 | ID | Scenario | Attack Tool | Command / Intensity |
 | :--- | :--- | :--- | :--- |
 | **01** | **Baseline** | N/A | No Attack Traffic |
@@ -28,25 +28,71 @@ The following table outlines the 10 scenarios tested.
 | **09** | **Watermarked 10ms** | N/A | Baseline + Security Overhead |
 | **10** | **Watermarked 20ms** | N/A | Baseline + Security Overhead |
 
-## 3. Data Collection Methodology
-We employed a multi-layered logging strategy to capture the "ground truth" of the network state.
+---
 
-### Network Captures (.pcap)
-To ensure no data was missed due to local processing limits, captures were run simultaneously on three nodes:
-1. **Robot:** Captured via `sudo timeout 600s tcpdump -i any -s 0 -w [scenario]_robot.pcap`.
-2. **Controller:** Captured via `sudo tshark -i any -a duration:600 -w [scenario]_controller.pcap`.
-3. **SOC:** Captured via `sudo tshark -i any -a duration:600 -w [scenario]_soc.pcap`.
+## 3. Detailed Scenario Data & Visualizations
 
-### System & Security Logs (.csv)
-The following CSV files were collected for each scenario:
-* **Heartbeat:** Monitor node availability and uptime.
-* **Metricbeat:** Resource utilization (CPU/RAM) across all SNS nodes.
-* **Packetbeat:** Real-time network flow and protocol metadata.
-* **Robot Battery:** Power consumption logs to detect "Energy Depletion" attacks.
-* **Robot Position:** X/Y coordinate logs to visualize path deviation caused by network latency.
+### Scenario 01: Baseline
+*Establishment of "Ground Truth" normal operations.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1Emb9Fh4wFoTK1m9q4UhB7hAO5EcBg1we?usp=drive_link)**
+* **Path Visual:**
+![Path 01](./01_baseline/dashboard.png)
 
-### Path Visualization
-A `.png` screenshot is included for each scenario, visualizing the robot's actual path (captured via position logs) compared to the intended elliptical trajectory.
+### Scenario 02: Deauth Flood
+*Link-layer disruption targeting 802.11 management frames.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1P6GAt9j_r2C2sfsoB5Kgj9SEiOJFJAwO?usp=drive_link)**
+* **Path Visual:**
+![Path 02](./02_deauth/dashboard.png)
+
+### Scenario 03: ICMP Flood (Fast)
+*High-intensity network saturation.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1CjnqMFcwN7X3a99coWRqVp6Uq_QsF8cT?usp=drive_link)**
+* **Path Visual:**
+![Path 03](./03_icmp_fast/dashboard.png)
+
+### Scenario 04: ICMP Flood (Slow)
+*Stealthy congestion testing (10ms Watermark baseline).*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1l6y3R8FGFq58DN-JtWVGmtqNXZzl6ull?usp=drive_link)**
+* **Path Visual:**
+![Path 04](./04_icmp_slow/dashboard.png)
+
+### Scenario 05: MITM
+*Man-in-the-Middle via ARP Poisoning.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1Qh7Q9BH3DmVNDE7er1gu4uG2q9fTH2C0?usp=drive_link)**
+* **Path Visual:**
+![Path 05](./05_mitm/dashboard.png)
+
+### Scenario 06: MITM + ICMP Flood
+*Simultaneous multi-vector attack.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1H6oHqAzBxMCu_9sPfWDl_dSo5h5JMI6i?usp=drive_link)**
+* **Path Visual:**
+![Path 06](./06_mitm_icmp/dashboard.png)
+
+### Scenario 07: TCP SYN Flood (Fast)
+*Exhaustion of TCP connection resources.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/17c8tX8jVLQTxvLKLxb6E9aLzIszZoyRX?usp=drive_link)**
+* **Path Visual:**
+![Path 07](./07_tcp_fast/dashboard.png)
+
+### Scenario 08: TCP SYN Flood (Slow)
+*Stealthy connection exhaustion (10ms Watermark baseline).*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1ISpE9Ex7RgJmawfyHn_cgTTP5xQF686l?usp=drive_link)**
+* **Path Visual:**
+![Path 08](./08_tcp_slow/dashboard.png)
+
+### Scenario 09: Watermarked 10ms
+*Baseline for system with 10ms security overhead.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1Z2ilmF6upx_B8f9LFApKIqesSr3Qcek9?usp=drive_link)**
+* **Path Visual:**
+![Path 09](./09_wm_10ms/dashboard.png)
+
+### Scenario 10: Watermarked 20ms
+*Baseline for system with 20ms security overhead.*
+* 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1A8HTThksIgNDcQN8EOQWpXheZRW-yclo?usp=drive_link)**
+* **Path Visual:**
+![Path 10](./10_wm_20ms/dashboard.png)
+
+---
 
 ## 4. Key Performance Observations
 Initial analysis indicates a significant degradation of service during "Fast" (flood) scenarios:
