@@ -16,13 +16,13 @@ Each data collection trial represents a **10-minute scenario** conducted on a de
 The following table outlines the 10 scenarios tested. 
 
 | ID | Scenario | Attack Tool | Command / Intensity |
-| :--- | :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- |
 | **01** | **Baseline** | N/A | No Attack Traffic |
 | **02** | **Deauth Flood** | `mdk4` | `sudo mdk4 wlan1 d -E [ssid]` |
 | **03** | **ICMP Flood (Fast)**| `hping3` | `sudo hping3 -1 --flood [IP]` |
 | **04** | **ICMP Flood (Slow)**| `hping3` | `sudo hping3 -1 --faster [IP]`|
-| **05** | **MITM** | `iptables, sysctl, scapy` | ARP Poisoning | None |
-| **06** | **MITM + ICMP** | Mixed | Multi-vector Attack | TBD |
+| **05** | **MITM** | `iptables, scapy` | ARP Poisoning |
+| **06** | **MITM + ICMP** | Mixed | Multi-vector Attack |
 | **07** | **TCP SYN (Fast)** | `hping3` | `sudo hping3 -S -p 22 --flood [IP]`|
 | **08** | **TCP SYN (Slow)** | `hping3` | `sudo hping3 -S -p 22 --faster [IP]`|
 | **09** | **Watermarked 10ms** | N/A | Baseline + Security Overhead |
@@ -33,9 +33,9 @@ We employed a multi-layered logging strategy to capture the "ground truth" of th
 
 ### Network Captures (.pcap)
 To ensure no data was missed due to local processing limits, captures were run simultaneously on three nodes:
-1. **Robot:** Captured via `sudo timeout 600s tcpdump -i any -s 0 -w [scenario]_robot.pcap `.
-2. **Controller:** Captured via `sudo tshark -i any -a duration:600 -w - > "[scenario]_controller.pcap" `.
-3. **SOC:** Captured via `sudo tshark -i any -a duration:600 -w - > "[scenario]_soc.pcap" `.
+1. **Robot:** Captured via `sudo timeout 600s tcpdump -i any -s 0 -w [scenario]_robot.pcap`.
+2. **Controller:** Captured via `sudo tshark -i any -a duration:600 -w [scenario]_controller.pcap`.
+3. **SOC:** Captured via `sudo tshark -i any -a duration:600 -w [scenario]_soc.pcap`.
 
 ### System & Security Logs (.csv)
 The following CSV files were collected for each scenario:
