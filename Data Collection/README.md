@@ -30,7 +30,24 @@ Each data collection trial represents a **10-minute scenario** conducted on a de
 
 ---
 
-## 3. Detailed Scenario Data & Visualizations
+## 3. Data Glossary (File Definitions)
+Each Google Drive folder contains 8 primary data artifacts. Below is the definition of each:
+
+### Network Captures (PCAP)
+* **`robot.pcap`**: Raw network traffic captured directly on the **TurtleBot3**. This is the "target's view" of the attack.
+* **`soc.pcap`**: Traffic captured at the **ELK/SOC node**. This shows what data reached the monitoring system for analysis.
+* **`controller.pcap`**: Traffic captured on the **Remote PC**. Used to verify if commands were successfully sent during network congestion.
+
+### Telemetry & Logs (CSV)
+* **`hb.csv` (Heartbeat)**: High-level availability logs; tracks if the communication link between the robot and SOC remained active.
+* **`mb.csv` (Metricbeat)**: System resource logs; tracks CPU usage, RAM consumption, and system load (crucial for identifying resource exhaustion).
+* **`pb.csv` (Packetbeat)**: Network flow metadata; summarizes protocol usage, source/destination IPs, and latency metrics.
+* **`bat.csv` (Battery)**: Power telemetry from the TurtleBot3; used to measure the energy cost of processing attack traffic.
+* **`pos.csv` (Position)**: Spatial odometry data (X, Y coordinates); used to track the robot's physical deviation from the intended path.
+
+---
+
+## 4. Detailed Scenario Data & Visualizations
 
 ### Scenario 01: Baseline
 *Establishment of "Ground Truth" normal operations.*
@@ -94,7 +111,7 @@ Each data collection trial represents a **10-minute scenario** conducted on a de
 
 ---
 
-## 4. Key Performance Observations
+## 5. Key Performance Observations
 Initial analysis indicates a significant degradation of service during "Fast" (flood) scenarios:
 * **Jitter:** Increased from a baseline of **0.5ms–0.6ms** to a range of **3ms–10ms** during active floods.
 * **Packet Loss:** Increased from a baseline of **0.02%–0.08%** to **0.4%–1.6%** under adversarial pressure.
