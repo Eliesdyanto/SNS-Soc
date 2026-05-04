@@ -68,7 +68,7 @@ Each Google Drive folder contains 8 primary data artifacts. Below is the definit
 ![Path 03](./03_dashboard.png)
 
 ### Scenario 04: ICMP Flood (Slow)
-*Stealthy congestion testing (10ms Watermark baseline).*
+*Stealthy congestion testing.*
 * 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1fBPkmXNwoo936hnV12K-TMsqY7ogzupm?usp=sharing)**
 * **Path Visual:**
 ![Path 04](./04_dashboard.png)
@@ -92,7 +92,7 @@ Each Google Drive folder contains 8 primary data artifacts. Below is the definit
 ![Path 07](./07_dashboard.png)
 
 ### Scenario 08: TCP SYN Flood (Slow)
-*Stealthy connection exhaustion (10ms Watermark baseline).*
+*Stealthy connection exhaustion.*
 * 📂 **[Access Raw Data (Google Drive)](https://drive.google.com/drive/folders/1iuGEY4p72ekj45Q9H1uXaiyHucOSld5Y?usp=sharing)**
 * **Path Visual:**
 ![Path 08](./08_dashboard.png)
